@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+ classpath:mapper/ProjectMapper.xml
+ -->
+<mapper namespace="cn.tedu.ttms.team.dao.TeamDao">
+
+  <select id="findPageObjects" resultType="map">
+     select t.*,p.name projectName
+     from tms_teams t join tms_projects p
+     on t.projectId=p.id
+     <where>
+      <if test="projectName!=null and projectName!=''">
+      p.name like CONCAT ("%",#{projectName},"%")
+      </if>
+      <if test='valid!=null'>
+      and t.valid=#{valid}
+      </if>
+     </where>
+    order by createdTime 
+     limit #{startIndex},#{pageSize};
+  </select>
+  
+  <!-- 统计总记录数 -->
+  <select id="getRowCount" resultType="java.lang.Integer">
+  select count(*) 
+  from tms_projects p join tms_teams t 
+  on p.id=t.projectId
+  <where>
+       <if test="projectName!=null and projectName!=''">
+            p.name like CONCAT ("%",#{projectName},"%")
+       </if>
+       <if test='valid!=null'>
+            and t.valid=#{valid}
+       </if>
+   </where>
+  </select>
+  
+  
+  <!-- 启用禁用更新valid -->
+  <update id="validById" >
+    UPDATE tms_teams SET valid=#{valid} where id in
+    <foreach
+    collection="ids"
+    open="(" close=")"
+    separator="," item="item"
+    >
+    #{item}
+    </foreach>
+     
+  </update>
+  
+  
+
+  <!-- 插入项目信息 -->
+  <insert id="insertObject" 
+   parameterType="cn.tedu.ttms.team.entity.Team">
+   
+      INSERT INTO tms_teams
+      (
+      id,
+      name,
+      projectId,
+      valid,
+      note,
+      createdUser,
+      modifiedUser,
+      createdTime,
+      modifiedTime
+      )
+      values(
+      #{id},
+      #{name},
+      #{projectId},
+      #{valid},
+      #{note},
+      #{createdUser},
+      #{modifiedUser},
+      NOW(),
+      NOW()) 
+  </insert>
+ </mapper> 
